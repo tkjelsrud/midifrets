@@ -65,7 +65,12 @@
       // Function to handle noteOff messages (ie. key is released)
       // Think of this like an 'onkeyup' event
       function noteOff(note) {
-          console.log(noteBuffer);
+        n = new Array();
+        for(key in noteBuffer) {
+         	n.push(noteToChord(key)); 
+        }
+        console.log(n);
+        //console.log(noteBuffer);
         noteBuffer = new Array();
       }
 
@@ -74,6 +79,12 @@
       // For instance, a lock is unlocked, the timer expires, etc.
       function runSequence(sequence) {
           //...
+      }
+      
+      function noteToChord(noteId) {
+       	n = noteId % 12;
+        ch = new Array("C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B");
+        return ch[n];
       }
     
     </script>
