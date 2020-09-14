@@ -43,7 +43,7 @@
           switch (command) {
               case 144: // note on
                   if (velocity > 0) {
-                      console.log(Date.getMilliseconds() + " " + command + ":" + note + ":" + velocity);
+                      console.log(new Date().getMilliseconds() + " " + command + ":" + note + ":" + velocity);
                       noteOn(note);
                   } else {
                       noteOff(note);
