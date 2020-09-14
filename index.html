@@ -38,10 +38,11 @@
           var command = message.data[0];
           var note = message.data[1];
           var velocity = (message.data.length > 2) ? message.data[2] : 0;
-		console.log(command + ":" + note + ":" + velocity);
+		
           switch (command) {
               case 144: // note on
                   if (velocity > 0) {
+                      console.log(command + ":" + note + ":" + velocity);
                       noteOn(note);
                   } else {
                       noteOff(note);
