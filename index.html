@@ -2,6 +2,16 @@
   <head>
     <script type="text/javascript">
       
+        // Request MIDI access
+        if (navigator.requestMIDIAccess) {
+            console.log('This browser supports WebMIDI!');
+
+            navigator.requestMIDIAccess().then(onMIDISuccess, onMIDIFailure);
+
+        } else {
+            console.log('WebMIDI is not supported in this browser.');
+        }
+      
       	function getMIDIMessage(message) {
 			var command = message.data[0];
             var note = message.data[1];
