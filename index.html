@@ -43,7 +43,7 @@
           switch (command) {
               case 144: // note on
                   if (velocity > 0) {
-                      console.log(new Date().getMilliseconds() + " " + command + ":" + note + ":" + velocity);
+                      //console.log(new Date().getMilliseconds() + " " + command + ":" + note + ":" + velocity);
                       noteOn(note);
                   } else {
                       noteOff(note);
@@ -65,7 +65,7 @@
       // Function to handle noteOff messages (ie. key is released)
       // Think of this like an 'onkeyup' event
       function noteOff(note) {
-          //...
+          console.log(noteBuffer);
       }
 
       // This function will trigger certain animations and advance gameplay
