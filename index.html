@@ -4,6 +4,7 @@
       // Variable which tell us what step of the game we're on.
       // We'll use this later when we parse noteOn/Off messages
       var currentStep = 0;
+      var noteBuffer = new Array();
 
       // Request MIDI access
       if (navigator.requestMIDIAccess) {
@@ -42,7 +43,7 @@
           switch (command) {
               case 144: // note on
                   if (velocity > 0) {
-                      console.log(command + ":" + note + ":" + velocity);
+                      console.log(Date.getMilliseconds() + " " + command + ":" + note + ":" + velocity);
                       noteOn(note);
                   } else {
                       noteOff(note);
@@ -58,7 +59,7 @@
       // Function to handle noteOn messages (ie. key is pressed)
       // Think of this like an 'onkeydown' event
       function noteOn(note) {
-          //...
+          noteBuffer[note] = 1;
       }
 
       // Function to handle noteOff messages (ie. key is released)
