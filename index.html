@@ -65,9 +65,9 @@
       // Function to handle noteOff messages (ie. key is released)
       // Think of this like an 'onkeyup' event
       function noteOff(note) {
-        n = new Array();
+        nArr = new Array();
         for(key in noteBuffer) {
-         	n.push(noteToChord(key)); 
+         	nArr.push(noteToChord(key)); 
         }
         console.log(n);
         //console.log(noteBuffer);
