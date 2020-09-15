@@ -2,22 +2,24 @@
   <head>
     <script type="text/javascript">
       /*
-      Theme 
+      Theme
       Darker #202225
       Dark bg #424242
       Light grey #606368
-      
+
       Text #D1D1D1
-      
+
       Green hl #04DAC6
       Pink hl #EA80FB
       Orange hl #FD8E31
       */
-      
+
       // Variable which tell us what step of the game we're on.
       // We'll use this later when we parse noteOn/Off messages
       var currentStep = 0;
       var noteBuffer = new Array();
+
+      var boardSize = {'fCnt': 14, 'sCnt': 6};
 
       // Request MIDI access
       if (navigator.requestMIDIAccess) {
@@ -52,7 +54,7 @@
           var command = message.data[0];
           var note = message.data[1];
           var velocity = (message.data.length > 2) ? message.data[2] : 0;
-		
+
           switch (command) {
               case 144: // note on
                   if (velocity > 0) {
@@ -80,34 +82,60 @@
       function noteOff(note) {
         nArr = new Array();
         for(key in noteBuffer) {
-         	nArr.push(noteToChord(key)); 
+         	nArr.push(noteToChord(key));
         }
-        console.log(nArr); 
+        console.log(nArr);
         //console.log(noteBuffer);
         noteBuffer = new Array();
       }
 
-      // This function will trigger certain animations and advance gameplay
-      // when certain criterion are identified by the noteOn/noteOff listeners
-      // For instance, a lock is unlocked, the timer expires, etc.
-      function runSequence(sequence) {
-          //...
-      }
-      
+
       function noteToChord(noteId) {
        	n = noteId % 12;
         ch = new Array("C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B");
         return ch[n];
       }
-      
+
       function chordToScale(chord) {
-       	x = "1 2 3 4 5 6 7"; 
+       	x = "1 2 3 4 5 6 7";
         // Assume a major scale, then replace all intervals to match
-        
+
       }
-      
+
+      function drawFretboard() {
+        var fb = document.createElement("div");
+        fb.classList.add("fretboard");
+        var nut = document.createElement("div");
+        nut.classList.add("nut");
+
+        fb.appendChild(nut);
+
+        for(var i = 0; i < boardSize.fCnt; i++) {
+          var col = document.createElement("div");
+          col.classList.add("col");
+
+          for(var j = 0; j < boardSize.sCnt; j++) {
+            var n = document.createElement("div");
+            n.setAttribute("id", "n" + i + "_" + j);
+            if(j == boardSize.sCnt - 1)
+              n.innerText = (i + 1);
+            col.appendChild(n);
+          }
+          fb.appendChild(col);
+        }
+
+        document.getElementById('canvas').appendChild(fb);
+      }
+
+      function highlightBoard(scale) {
+        for(var i = 0; i < boardSize.fCnt; i++) {
+          var n = document.getElementById("n" + i + "_0");
+          n.classList.add("hla");
+        }
+      }
+
       /*
-      
+
 Score	Root	Scale	Notes	Intervals	More Info
 1	C	Major Scale	C,D,E,F,G,A,B	1 2 3 4 5 6 7	More info...
 2	C	Natural Minor Scale (Aeolian Mode)	C,D,Eb,F,G,Ab,Bb	1 2 b3 4 5 b6 b7	More info...
@@ -128,79 +156,59 @@ Score	Root	Scale	Notes	Intervals	More Info
 17	C	Locrian Mode	C,Db,Eb,F,Gb,Ab,Bb	1 b2 b3 4 b5 b6 b7	More info...
 18	C	Half Diminished Scale	C,D,D#,E#,F#,G#,A#	1 2 b3 4 b5 b6 b7	More info...
 */
-    
+
     </script>
     <style>
       body {
         background-color: #202225;
         color: ##D1D1D1;
+        margin: 20px;
+        font-family: Verdana;
+        font-size: 12px;
+      }
+      .fretboard {
+        height: 208px;
+        border-bottom: 4px solid white;
+      }
+      .fretboard .nut {
+        float: left;
+        width: 4px;
+        height: 100%;
+        background-color: #FD8E31;
       }
       .fretboard .col {
         float: left;
-        width: 40px;
+        width: 60px;
         border: 1px solid #606368;
-        margin-bottom: 2px solid #FFF;
       }
-      
+
       .fretboard .col div {
         float: left;
         margin: 1px;
-        width: 38px;
+        width: 58px;
+        height: 32px;
         background-color: #424242;
+        color: #666;
+        text-align: center;
+        /*box-sizing: border-box;
+        margin: 10px;*/
+      }
+
+      .hla {
+        background-color: #04DAC6 !important;
+      }
+      .hlb {
+        background-color: #EA80FB !important;
+      }
+      .hlc {
+        background-color: #FD8E31 !important;
       }
     </style>
   </head>
-  
+
   <body>
-    <div class="fretboard">
-    	<div class="col">
-          <div>&nbsp;</div>
-          <div>&nbsp;</div>
-          <div>&nbsp;</div>
-          <div>&nbsp;</div>
-          <div>&nbsp;</div>
-          <div>&nbsp;</div>
-      </div>
-      <div class="col">
-          <div>&nbsp;</div>
-          <div>&nbsp;</div>
-          <div>&nbsp;</div>
-          <div>&nbsp;</div>
-          <div>&nbsp;</div>
-          <div>&nbsp;</div>
-      </div>
-          	<div class="col">
-          <div>&nbsp;</div>
-          <div>&nbsp;</div>
-          <div>&nbsp;</div>
-          <div>&nbsp;</div>
-          <div>&nbsp;</div>
-          <div>&nbsp;</div>
-      </div>
-      <div class="col">
-          <div>&nbsp;</div>
-          <div>&nbsp;</div>
-          <div>&nbsp;</div>
-          <div>&nbsp;</div>
-          <div>&nbsp;</div>
-          <div>&nbsp;</div>
-      </div>
-      <div class="col">
-          <div>&nbsp;</div>
-          <div>&nbsp;</div>
-          <div>&nbsp;</div>
-          <div>&nbsp;</div>
-          <div>&nbsp;</div>
-          <div>&nbsp;</div>
-      </div>
-      <div class="col">
-          <div>&nbsp;</div>
-          <div>&nbsp;</div>
-          <div>&nbsp;</div>
-          <div>&nbsp;</div>
-          <div>&nbsp;</div>
-          <div>&nbsp;</div>
-      </div>
+    <div id="canvas">
+      &nbsp;
     </div>
   </body>
 </html>
