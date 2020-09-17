@@ -19,7 +19,21 @@
       var currentStep = 0;
       var noteBuffer = new Array();
 
-      var boardSize = {'fCnt': 14, 'sCnt': 6};
+      var boardSize = {'fCnt': 17, 'sCnt': 6};
+
+      var relativeList = new Array("1", "b2", "2", "b3", "3", "4", "4#", "5", "b6", "6", "b7", "7");
+      var noteList = new Array("C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B");
+
+      var scaleList = new Array(
+        {'name': "Major", 'rel': ["1","2","3","4","5","6","7"]},
+        {'name': "Minor", 'rel': ["1", "2", "b3", "4", "5", "b6", "b7"]},
+        {'name': "Harmonic Minor", 'rel': ["1","2","b3","4","5","b6","7"]},
+        {'name': "Melodic Minor", 'rel': ["1","2","b3","4","5","6","7"]},
+        {'name': "Phrygian", 'rel': ["1","b2","b3","4","5","b6","b7"]},
+        {'name': "Lydian", 'rel': ["1","2","3","4#","5","6","7"]},
+        {'name': "Mixolydian", 'rel': ["1","2","3","4","5","6","b7"]},
+        {'name': "Locrian", 'rel': ["1","b2","b3","4","4#","b6","b7"]}
+      );
 
       // Request MIDI access
       if (navigator.requestMIDIAccess) {
@@ -35,7 +49,7 @@
       function onMIDISuccess(midiAccess) {
           var inputs = midiAccess.inputs;
           var outputs = midiAccess.outputs;
-
+          //console.log("midi connected");
           // Attach MIDI event "listeners" to each input
           for (var input of midiAccess.inputs.values()) {
               input.onmidimessage = getMIDIMessage;
@@ -80,26 +94,36 @@
       // Function to handle noteOff messages (ie. key is released)
       // Think of this like an 'onkeyup' event
       function noteOff(note) {
-        nArr = new Array();
+        lookup = new Array();
         for(key in noteBuffer) {
-         	nArr.push(noteToChord(key));
+         	lookup.push(noteToChord(key));
         }
-        console.log(nArr);
-        //console.log(noteBuffer);
-        noteBuffer = new Array();
-      }
 
+        noteBuffer = new Array();
+
+        if(lookup.length > 0) {
+          console.log(lookup);
+
+          document.getElementById("chord").innerText = lookup[0].name;
+          var rel = chordToRelative(lookup);
+          var fullScale = relativeToScale(rel);
+          var allNotes = relativeToNotes(lookup[0], fullScale.rel);
+          console.log(allNotes);
+          // TODO: now need to translate this to other note positions
+          //
+          //
+          document.getElementById("scale").innerText = fullScale.name;
+
+          unhighlightBoard();
+          highlightBoard(allNotes);
+        }
+      }
 
       function noteToChord(noteId) {
        	n = noteId % 12;
-        ch = new Array("C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B");
-        return ch[n];
-      }
+        o = Math.round(noteId / 12) - 1;
 
-      function chordToScale(chord) {
-       	x = "1 2 3 4 5 6 7";
-        // Assume a major scale, then replace all intervals to match
-
+        return {'num': n, 'oct': o, 'name': noteList[n]};
       }
 
       function drawFretboard() {
@@ -113,12 +137,14 @@
         for(var i = 0; i < boardSize.fCnt; i++) {
           var col = document.createElement("div");
           col.classList.add("col");
+          if(i == 0)
+            col.classList.add("first");
 
           for(var j = 0; j < boardSize.sCnt; j++) {
             var n = document.createElement("div");
             n.setAttribute("id", "n" + i + "_" + j);
             if(j == boardSize.sCnt - 1)
-              n.innerText = (i + 1);
+              n.innerText = (i);
             col.appendChild(n);
           }
           fb.appendChild(col);
@@ -127,11 +153,91 @@
         document.getElementById('canvas').appendChild(fb);
       }
 
+      function unhighlightBoard() {
+        var elems = document.querySelectorAll("div.hlaFade");
+        [].forEach.call(elems, function(el) {
+          el.classList.remove("hlaFade");
+        });
+
+        var elems = document.querySelectorAll("div.hla");
+        [].forEach.call(elems, function(el) {
+          el.classList.remove("hla");
+          el.classList.add("hlaFade");
+        });
+
+        var elems = document.querySelectorAll("div.hlb");
+        [].forEach.call(elems, function(el) {
+          el.classList.remove("hlb");
+          //el.classList.add("hlbFade");
+        });
+      }
+
       function highlightBoard(scale) {
-        for(var i = 0; i < boardSize.fCnt; i++) {
-          var n = document.getElementById("n" + i + "_0");
-          n.classList.add("hla");
+        for(var i = 0; i < boardSize.sCnt; i++) {
+          for(var j = 0; j < boardSize.fCnt; j++) {
+            var n = document.getElementById("n" + j + "_" + i);
+            var p = neckPosToNote(j, i);
+
+            for(var k = 0; k < scale.length; k++) {
+              if(scale[k].name == p.name) {
+                n.classList.remove("hlaFade");
+                if(k == 0)
+                  n.classList.add("hla");
+                else
+                  n.classList.add("hlb");
+              }
+            }
+          }
         }
+      }
+
+      function neckPosToNote(fId, sId) {
+        var offset = new Array(4, 11, 7, 2, 9, 4);
+        return noteToChord(offset[sId] + fId);
+      }
+
+      function chordToRelative(chord) {
+        var rel = new Array("1") // first note is always root
+        var root = chord[0];
+
+        for(var i = 1; i < chord.length; i++) {
+          var diff = (chord[i].num - root.num);
+          if(diff < 0) diff += 12;
+          rel.push(relativeList[diff]);
+        }
+        return rel;
+      }
+
+      function relativeToScale(rel) {
+        //TODO: will fail on single note scale
+        var match = {'name': "", 'cnt': 0, 'rel': []};
+        for(var i = 0; i < scaleList.length; i++) {
+            var s = scaleList[i];
+            var z = s.rel.filter(function(val) {
+              return rel.indexOf(val) != -1;
+            });
+
+            if(z.length > match.cnt) {
+              match.name = s.name;
+              match.cnt = z.length;
+              match.rel = s.rel;
+            }
+        }
+
+        return match;
+      }
+
+      function relativeToNotes(root, rel) {
+        var nList = new Array();
+        for(var i = 0; i < rel.length; i++) {
+          var n = relativeList.indexOf(rel[i]) + root.num;
+          nList.push(noteToChord(n));
+        }
+        return nList;
+      }
+
+      window.onload = function() {
+        drawFretboard();
       }
 
       /*
@@ -161,11 +267,24 @@ Score	Root	Scale	Notes	Intervals	More Info
     <style>
       body {
         background-color: #202225;
-        color: ##D1D1D1;
+        color: #D1D1D1;
         margin: 20px;
         font-family: Verdana;
         font-size: 12px;
       }
+
+      #top {
+        font-size: 16px;
+      }
+
+      #chord {
+        color: #202225;
+      }
+
+      #scale {
+        color: #202225;
+      }
+
       .fretboard {
         height: 208px;
         border-bottom: 4px solid white;
@@ -180,6 +299,10 @@ Score	Root	Scale	Notes	Intervals	More Info
         float: left;
         width: 60px;
         border: 1px solid #606368;
+      }
+
+      .first {
+        width: 12px !important;
       }
 
       .fretboard .col div {
@@ -203,10 +326,25 @@ Score	Root	Scale	Notes	Intervals	More Info
       .hlc {
         background-color: #FD8E31 !important;
       }
+
+      .hlaFade {
+        background-color:#04DAC6;
+        animation-name:bckanim;
+        animation-fill-mode:forwards;
+        animation-duration:1s;
+        animation-delay:0s;
+      }
+      @keyframes bckanim {
+        0% {background-color:#04DAC6;}
+        100% { background-color:#424242;}
+      }
     </style>
   </head>
 
   <body>
+    <div id="top">
+      <div>Chord <span id="chord" class="hla">x</span> Scale <span id="scale" class="hlb">x</span></div>
+    </div>
     <div id="canvas">
       &nbsp;
     </div>
